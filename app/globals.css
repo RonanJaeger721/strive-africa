@@ -54,3 +54,8 @@ section[id]{scroll-margin-top:86px}@media(max-width:720px){section[id]{scroll-ma
 
 /* Readable contrast for small interface text */
 .searchForm label span{color:#665f55}.catalogueHead>div>span,.programIndex span,.programCard>small,.programFoot a{color:#a83205}.programIndex,.programFoot div span{color:#66615a}.programCard:hover .programIndex span,.programCard:hover>small,.programCard:hover .programFoot a{color:#ff8a5d}.programCard:hover .programIndex,.programCard:hover .programFoot div span{color:#bbb}.contact h2 em{color:var(--ink)}.processHead h2 em{color:#a83205}.destinationList button.hasPrograms>span,.destinationList button.hasPrograms p{color:var(--ink);opacity:1}.processHead>span,.steps article>b,.destinationIntro>span,.faq>div>span,.faqList button span,.galleryHead>span,.galleryFooter>div b{color:#a83205}.galleryFooter>p{color:#625e57}footer small,.footerBottom{color:#999}.eligibilityFloat small{color:var(--ink);opacity:1}
+
+/* Keep transformed carousel layers inside the intended desktop hero frame. */
+.heroText{position:relative;z-index:2}.heroVisual{isolation:isolate;contain:paint;clip-path:inset(0 round 14px)}
+@media(min-width:1051px){.hero{grid-template-columns:minmax(0,1fr) minmax(420px,.82fr);gap:clamp(55px,6vw,96px)}.heroVisual{width:100%;max-width:620px;justify-self:end}}
+@media(max-width:720px){.heroVisual{clip-path:inset(0 round 14px)}}
