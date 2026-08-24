@@ -47,6 +47,7 @@ const sectionLinks: SectionLink[] = [
   { label: "How it works", href: "#process" },
   { label: "Services", href: "#services" },
   { label: "Student journeys", href: "#gallery" },
+  { label: "Who we are", href: "#about" },
   { label: "Journal", href: "#journal" },
   { label: "FAQs", href: "#faq" },
   { label: "Contact Strive", href: "#contact" },
@@ -220,6 +221,13 @@ function buildAnswer(question: string): Omit<ChatMessage, "id" | "role"> {
     };
   }
 
+  if (hasAny(question, ["facebook", "instagram", "tiktok", "social media", "follow strive"])) {
+    return {
+      content: "You can follow Strive Africa on Facebook, TikTok and Instagram. The official links are collected in the Who We Are section and repeated in the footer.",
+      links: [{ label: "Open social links", href: "#about" }],
+    };
+  }
+
   if (hasAny(question, ["journal", "advice", "tips", "prepare early"])) {
     return {
       content: "The Beyond Borders Journal shares practical guidance on choosing a university, preparing documents early, and moving from an offer letter to the boarding gate.",
@@ -244,8 +252,8 @@ function buildAnswer(question: string): Omit<ChatMessage, "id" | "role"> {
 
   if (query.includes("about strive") || query.includes("who are you") || query.includes("what is strive")) {
     return {
-      content: "Strive Africa is a Harare-based study-abroad consultancy helping students move from course discovery through university placement, applications, visa preparation and supported departure.",
-      links: [{ label: "See the journey", href: "#process" }, { label: "Explore services", href: "#services" }, { label: "Contact Strive", href: "#contact" }],
+      content: "Strivio Education Solutions is a Zimbabwe-based education consultancy connecting students with international study opportunities. Its directors bring industry experience and international exposure, and Strivio also supports Southern African student recruitment as a supplier to Nexafriqa (Pty) Ltd in South Africa.",
+      links: [{ label: "Who we are", href: "#about" }, { label: "Explore services", href: "#services" }, { label: "Contact Strive", href: "#contact" }],
     };
   }
 
