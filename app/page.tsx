@@ -27,7 +27,7 @@ const universityAliases:Record<string,string>={
 };
 const universityName=(name:string)=>universityAliases[name]||name.replace(/\b[A-Z]{4,}\b/g,word=>word.charAt(0)+word.slice(1).toLowerCase());
 const programs=raw as P[];
-const countries=["Russia","Poland","Mauritius","Malaysia","India","Lithuania","Georgia","Hungary","Uzbekistan","UAE","Bulgaria","France","Greece","Ireland","Germany","Australia","United Kingdom","Canada","Spain"];
+const countries=["Australia","Bulgaria","Canada","France","Georgia","Germany","Greece","Hungary","India","Ireland","Lithuania","Malaysia","Mauritius","Poland","Russia","Spain","UAE","United Kingdom","Uzbekistan"];
 const countryNotes:Record<string,{currency:string;summary:string}>={
  Russia:{currency:"Russian ruble (RUB)",summary:"A broad university market with medicine, engineering, technology and other academic routes across several cities."},
  Poland:{currency:"Polish złoty (PLN)",summary:"A European study destination with English-taught options and a strong selection of business, technology and health programmes."},

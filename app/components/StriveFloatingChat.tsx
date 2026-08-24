@@ -28,9 +28,9 @@ type ChatMessage = {
 const programmes = raw as Programme[];
 const WHATSAPP = "263716730064";
 const siteCountries = [
-  "Russia", "Poland", "Mauritius", "Malaysia", "India", "Lithuania", "Georgia", "Hungary",
-  "Uzbekistan", "UAE", "Bulgaria", "France", "Greece", "Ireland", "Germany", "Australia",
-  "United Kingdom", "Canada", "Spain",
+  "Australia", "Bulgaria", "Canada", "France", "Georgia", "Germany", "Greece", "Hungary",
+  "India", "Ireland", "Lithuania", "Malaysia", "Mauritius", "Poland", "Russia", "Spain",
+  "UAE", "United Kingdom", "Uzbekistan",
 ];
 
 const STARTERS = [
