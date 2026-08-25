@@ -123,7 +123,7 @@ function buildAnswer(question: string): Omit<ChatMessage, "id" | "role"> {
 
   if (hasAny(question, ["office", "address", "location", "where are you", "meet the team", "phone", "call", "whatsapp", "contact", "email"])) {
     return {
-      content: "You can meet Strive Africa at Office 35, 6 Chelmsford Road, Belgravia, Harare, Zimbabwe. Call or WhatsApp +263 71 673 0064 to discuss your options or start an application.",
+      content: "You can meet Strive Africa at Office 35, 6 Chelmsford Road, Belgravia, Harare, Zimbabwe, or at Number 5 Benmore Gardens, Corworx, Gauteng, South Africa. Call or WhatsApp +263 71 673 0064, or email batsirai@striveafriqa.com.",
       links: [{ label: "Contact Strive", href: "#contact" }],
     };
   }
