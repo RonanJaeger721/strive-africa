@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { siteUrl } from "./data/destinations";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,13 +13,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = "https://strive-africa.vercel.app";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Study Abroad Consultants in Zimbabwe | Strive Africa",
+  title: "Study Abroad Consultants in Harare, Zimbabwe | Strive Africa",
   description: "Study abroad guidance from Harare for university placements, international applications, career guidance, student visa support and flight bookings.",
   keywords: ["study abroad Zimbabwe", "study abroad consultants Zimbabwe", "study abroad consultants Harare", "education consultants Zimbabwe", "education consultants Harare", "university placement agency Zimbabwe", "international university applications Zimbabwe", "student visa assistance Zimbabwe", "study abroad programmes and fees", "study in Malaysia from Zimbabwe", "study in Poland from Zimbabwe", "study in the UK from Zimbabwe", "study in Canada from Zimbabwe"],
-  alternates: { canonical: "/" },
+  alternates: { canonical: siteUrl },
+  robots: { index: true, follow: true },
   icons: { icon: "/strive-logo.jpeg" },
   openGraph: { type: "website", url: siteUrl, siteName: "Strive Africa", title: "Study Abroad Consultants in Zimbabwe | Strive Africa", description: "Find programmes, compare destinations and get guided support from university placement to departure.", images: [{ url: "/og.png", width: 1200, height: 630, alt: "Strive Africa — Beyond Borders" }] },
   twitter: { card: "summary_large_image", title: "Study Abroad Consultants in Zimbabwe | Strive Africa", description: "University placement, application, visa and travel guidance from Zimbabwe to the world.", images: ["/og.png"] },

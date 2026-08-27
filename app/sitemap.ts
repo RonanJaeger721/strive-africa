@@ -1,4 +1,9 @@
 import type { MetadataRoute } from "next";
+import { countries, countrySlug, siteUrl } from "./data/destinations";
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [{ url: "https://strive-africa.vercel.app/", lastModified: new Date(), changeFrequency: "weekly", priority: 1 }];
+  const lastModified = new Date();
+  return [
+    { url: `${siteUrl}/`, lastModified, changeFrequency: "weekly", priority: 1 },
+    ...countries.map((country) => ({ url: `${siteUrl}/study-in/${countrySlug(country)}`, lastModified, changeFrequency: "monthly" as const, priority: 0.8 })),
+  ];
 }
