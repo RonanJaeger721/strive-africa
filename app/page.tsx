@@ -1,102 +1,1738 @@
 "use client";
 import Image from "next/image";
-import {FormEvent,useEffect,useMemo,useState} from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import raw from "./data/programs.json";
 import StriveFloatingChat from "./components/StriveFloatingChat";
 import { countrySlug } from "./data/destinations";
-type P={id:string;country:string;level:string;program:string;university:string;fee:number;currency:string;duration:string;durationLabel:string;sourceSheet:string};
-const universityAliases:Record<string,string>={
- "ALTE UNIVERSITY":"Alte University",
- "Asia Pacific University - APU":"Asia Pacific University (APU)",
- "BRITTS IMPERIAL GLOBAL EDUATION (BIGE)":"Britts Imperial Global Education (BIGE)",
- "CAUCASUS INTERNATIONAL UNIVERSITY (CIU)":"Caucasus International University (CIU)",
- "INTERNATIONAL BLACK SEA UNIVERSITY (IBSU)":"International Black Sea University (IBSU)",
- "KEN WALKER INTERNATIONAL UNIVERSITY (KWIN)":"Ken Walker International University (KWIN)",
- "Segi":"SEGi University",
- "SEGI":"SEGi University",
- "PETRE SHOTADZE TBILISI MEDICAL ACADEMY (TMA)":"Petre Shotadze Tbilisi Medical Academy (TMA)",
- "John Neumann University":"John von Neumann University",
- "Kuala Lumpuh University of Science & Technology - KLUST":"Kuala Lumpur University of Science and Technology (KLUST)",
- "Kuala Lumpur University of Science and Technology (KLUST)":"Kuala Lumpur University of Science and Technology (KLUST)",
- "VISTULA":"Vistula University",
- "VISTULA UNIVERSITY":"Vistula University",
- "Werkele International Busines School":"Wekerle International University",
- "INTI":"INTI",
- "UEHS":"UEHS",
- "UNIVERSITY OF INFORMATION TECHNOLOGY AND MANAGEMENT (UITM)":"University of Information Technology and Management (UITM)",
- "Tibilisi State Medical University":"Tbilisi State Medical University",
+type P = {
+  id: string;
+  country: string;
+  level: string;
+  program: string;
+  university: string;
+  fee: number;
+  currency: string;
+  duration: string;
+  durationLabel: string;
+  sourceSheet: string;
 };
-const universityName=(name:string)=>universityAliases[name]||name.replace(/\b[A-Z]{4,}\b/g,word=>word.charAt(0)+word.slice(1).toLowerCase());
-const programs=raw as P[];
-const countries=["Australia","Bulgaria","Canada","France","Georgia","Germany","Greece","Hungary","India","Ireland","Lithuania","Malaysia","Mauritius","Poland","Russia","Spain","UAE","United Kingdom","Uzbekistan"];
-const countryNotes:Record<string,{currency:string;summary:string}>={
- Russia:{currency:"Russian ruble (RUB)",summary:"A broad university market with medicine, engineering, technology and other academic routes across several cities."},
- Poland:{currency:"Polish złoty (PLN)",summary:"A European study destination with English-taught options and a strong selection of business, technology and health programmes."},
- Mauritius:{currency:"Mauritian rupee (MUR)",summary:"An island study destination offering a multicultural environment and a practical regional option for African students."},
- Malaysia:{currency:"Malaysian ringgit (MYR)",summary:"A diverse education hub with a wide choice of institutions, programme levels and comparatively accessible study routes."},
- India:{currency:"Indian rupee (INR)",summary:"A large education market with extensive course choice across technology, business, health sciences and the humanities."},
- Lithuania:{currency:"Euro (EUR)",summary:"A compact European destination with internationally oriented programmes and pathways in business and technology."},
- Georgia:{currency:"Georgian lari (GEL)",summary:"A growing study destination known for internationally accessible university options, including medical pathways."},
- Hungary:{currency:"Hungarian forint (HUF)",summary:"A Central European destination with established universities and English-taught routes across several disciplines."},
- Uzbekistan:{currency:"Uzbekistani soʻm (UZS)",summary:"An emerging destination with affordable programme options, particularly within medicine and related fields."},
- UAE:{currency:"UAE dirham (AED)",summary:"A globally connected study environment with modern campuses and access to business, technology and professional networks."},
- Bulgaria:{currency:"Bulgarian lev (BGN)",summary:"A European destination offering university pathways in medicine, business, engineering and other professional fields."},
- France:{currency:"Euro (EUR)",summary:"A major European education centre with routes in business, arts, engineering, science and hospitality."},
- Greece:{currency:"Euro (EUR)",summary:"A Mediterranean study destination with a growing range of internationally taught academic programmes."},
- Ireland:{currency:"Euro (EUR)",summary:"An English-speaking European destination with strong links to technology, business, research and global employers."},
- Germany:{currency:"Euro (EUR)",summary:"A respected European study destination with strong engineering, technology, research and applied-science pathways."},
- Australia:{currency:"Australian dollar (AUD)",summary:"A globally recognised destination with broad course choice, established student services and multicultural cities."},
- "United Kingdom":{currency:"Pound sterling (GBP)",summary:"A well-established study destination offering globally recognised qualifications and a wide range of specialist programmes."},
- Canada:{currency:"Canadian dollar (CAD)",summary:"A multicultural destination with university and college pathways across academic, technical and career-focused fields."},
- Spain:{currency:"Euro (EUR)",summary:"A vibrant European destination offering programmes in business, hospitality, technology and other international fields."},
+const universityAliases: Record<string, string> = {
+  "ALTE UNIVERSITY": "Alte University",
+  "Asia Pacific University - APU": "Asia Pacific University (APU)",
+  "BRITTS IMPERIAL GLOBAL EDUATION (BIGE)":
+    "Britts Imperial Global Education (BIGE)",
+  "CAUCASUS INTERNATIONAL UNIVERSITY (CIU)":
+    "Caucasus International University (CIU)",
+  "INTERNATIONAL BLACK SEA UNIVERSITY (IBSU)":
+    "International Black Sea University (IBSU)",
+  "KEN WALKER INTERNATIONAL UNIVERSITY (KWIN)":
+    "Ken Walker International University (KWIN)",
+  Segi: "SEGi University",
+  SEGI: "SEGi University",
+  "PETRE SHOTADZE TBILISI MEDICAL ACADEMY (TMA)":
+    "Petre Shotadze Tbilisi Medical Academy (TMA)",
+  "John Neumann University": "John von Neumann University",
+  "Kuala Lumpuh University of Science & Technology - KLUST":
+    "Kuala Lumpur University of Science and Technology (KLUST)",
+  "Kuala Lumpur University of Science and Technology (KLUST)":
+    "Kuala Lumpur University of Science and Technology (KLUST)",
+  VISTULA: "Vistula University",
+  "VISTULA UNIVERSITY": "Vistula University",
+  "Werkele International Busines School": "Wekerle International University",
+  INTI: "INTI",
+  UEHS: "UEHS",
+  "UNIVERSITY OF INFORMATION TECHNOLOGY AND MANAGEMENT (UITM)":
+    "University of Information Technology and Management (UITM)",
+  "Tibilisi State Medical University": "Tbilisi State Medical University",
 };
-const steps=[["01","Tell us about you","Share your interests, academic background, destination and budget."],["02","Explore suitable options","Compare programmes and universities from Strive’s master list."],["03","Prepare your application","Get guidance on documents, statements, deadlines and submission."],["04","Move from offer to visa","Understand your offer and prepare for the student visa process."],["05","Book and depart","Plan your journey and flight with support before departure."]];
-const services=[
- {title:"University placements",strap:"Find the right university for your future",intro:"We assess your academic results, career interests, budget and personal goals before recommending suitable study options—from Foundation and Certificate routes to Bachelor’s and Master’s programmes.",items:["Reviewing your academic qualifications","Recommending suitable countries and universities","Identifying programmes that match your career goals","Comparing tuition fees, entry requirements and intakes","Exploring alternative pathways where direct entry is unavailable","Helping you make an informed final choice"],close:"Let us help you find the right place to study."},
- {title:"Application support",strap:"Making your university application simple and manageable",intro:"STRIVE Africa guides you through every stage so that your application is complete, accurate and professionally prepared, reducing mistakes and unnecessary delays.",items:["Checking university entry requirements","Reviewing your academic and personal documents","Helping you complete application forms","Assisting with motivation letters and personal statements","Submitting applications to selected institutions","Following up on application progress","Explaining offer letters and admission conditions","Guiding you through tuition and acceptance procedures"],close:"Start your application with professional support."},
- {title:"Career guidance",strap:"Connect your strengths and ambitions to the right study path",intro:"We help you understand your strengths, interests and long-term goals before making an important study decision—whether you know what you want or are still uncertain.",items:["Discussing your interests, abilities and ambitions","Reviewing your academic performance","Identifying suitable career options","Recommending relevant courses and qualifications","Explaining available study pathways","Helping you understand potential career opportunities","Supporting parents and students in making informed decisions"],close:"Your career journey begins with the right decision."},
- {title:"Visa centre",strap:"Prepare confidently for every stage of your visa application",intro:"Visa requirements differ between countries. We provide guidance based on the relevant embassy, immigration authority and institution requirements while the final decision remains with immigration.",items:["Providing a personalised visa-document checklist","Reviewing financial and sponsorship documents","Assisting with visa application forms","Guiding students on medical examinations and police clearances","Supporting document certification and legalisation","Assisting with visa appointment preparation","Conducting interview preparation where required","Reviewing the application before submission","Providing updates and guidance throughout the process"],close:"Prepare your student visa application with confidence."},
- {title:"Flight bookings",strap:"Turn your admission into a supported departure plan",intro:"Once your admission and visa have been secured, we help make your transition from home to your study destination easier and less stressful.",items:["Comparing suitable flight options","Helping you select practical travel dates and routes","Assisting with flight reservations and bookings","Checking university reporting and arrival dates","Providing baggage and travel-document guidance","Preparing a pre-departure checklist","Coordinating airport pickup where available","Supporting accommodation and arrival arrangements","Providing important information about your destination"],close:"Let us help you plan your departure."}
+const universityName = (name: string) =>
+  universityAliases[name] ||
+  name.replace(
+    /\b[A-Z]{4,}\b/g,
+    (word) => word.charAt(0) + word.slice(1).toLowerCase(),
+  );
+const programs = raw as P[];
+const countries = [
+  "Australia",
+  "Bulgaria",
+  "Canada",
+  "France",
+  "Georgia",
+  "Germany",
+  "Greece",
+  "Hungary",
+  "India",
+  "Ireland",
+  "Lithuania",
+  "Malaysia",
+  "Mauritius",
+  "Poland",
+  "Russia",
+  "Spain",
+  "UAE",
+  "United Kingdom",
+  "Uzbekistan",
 ];
-const heroImages=[1,6,8,11,13].map(n=>`/strive/journeys/journey-${String(n).padStart(2,"0")}.jpeg`);
-const galleryImages=Array.from({length:21},(_,i)=>`/strive/journeys/journey-${String(i+1).padStart(2,"0")}.jpeg`);
-const money=(p:P)=>{const n=new Intl.NumberFormat("en-US",{maximumFractionDigits:2}).format(p.fee);return p.currency==="USD"?`$${n}`:p.currency==="EUR"?`€${n}`:`${n} · currency not stated`};
-export default function Home(){
- const [country,setCountry]=useState(""),[query,setQuery]=useState(""),[level,setLevel]=useState(""),[uni,setUni]=useState(""),[visible,setVisible]=useState(10),[menu,setMenu]=useState(false),[faq,setFaq]=useState(0),[heroSlide,setHeroSlide]=useState(0),[serviceOpen,setServiceOpen]=useState<number|null>(null),[destinationOpen,setDestinationOpen]=useState<string|null>(null),[leadName,setLeadName]=useState(""),[leadContact,setLeadContact]=useState(""),[newsletterOpen,setNewsletterOpen]=useState(false),[newsletterEmail,setNewsletterEmail]=useState(""),[eligibilityOpen,setEligibilityOpen]=useState(false),[assessmentName,setAssessmentName]=useState(""),[assessmentContact,setAssessmentContact]=useState(""),[assessmentLevel,setAssessmentLevel]=useState("Undergraduate"),[assessmentCountry,setAssessmentCountry]=useState(""),[assessmentResults,setAssessmentResults]=useState(""),[assessmentFiles,setAssessmentFiles]=useState<File[]>([]),[assessmentNote,setAssessmentNote]=useState(""),[galleryOpen,setGalleryOpen]=useState(false),[galleryIndex,setGalleryIndex]=useState(0);
- useEffect(()=>{const o=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add("seen")),{threshold:.08});document.querySelectorAll("[data-reveal]").forEach(n=>o.observe(n));return()=>o.disconnect()},[]);
- useEffect(()=>{const timer=window.setInterval(()=>setHeroSlide(i=>(i+1)%heroImages.length),4000);return()=>window.clearInterval(timer)},[]);
- useEffect(()=>{const last=Number(localStorage.getItem("strive-email-prompt")||0);if(Date.now()-last<7*24*60*60*1000)return;const timer=window.setTimeout(()=>setNewsletterOpen(true),7000);return()=>window.clearTimeout(timer)},[]);
- const counts=useMemo(()=>Object.fromEntries(countries.map(c=>[c,programs.filter(p=>p.country===c).length])),[]);
- const destinationStats=useMemo(()=>Object.fromEntries(countries.map(c=>{const rows=programs.filter(p=>p.country===c);const ranges=[...new Set(rows.map(p=>p.currency||"Not stated"))].map(currency=>{const fees=rows.filter(p=>(p.currency||"Not stated")===currency&&p.fee>0).map(p=>p.fee);if(!fees.length)return null;const symbol=currency==="USD"?"$":currency==="EUR"?"€":"";return `${symbol}${Math.min(...fees).toLocaleString("en-US")}–${symbol}${Math.max(...fees).toLocaleString("en-US")} ${currency==="Not stated"?"(currency not stated)":currency}`}).filter((range):range is string=>Boolean(range));return[c,{programmes:rows.length,universities:new Set(rows.map(p=>universityName(p.university))).size,ranges}] })),[]);
- const unis=useMemo(()=>[...new Set(programs.filter(p=>!country||p.country===country).map(p=>universityName(p.university)))].sort((a,b)=>a.localeCompare(b)),[country]);
- const found=useMemo(()=>programs.filter(p=>(!country||p.country===country)&&(!level||p.level===level)&&(!uni||universityName(p.university)===uni)&&(!query||`${p.program} ${universityName(p.university)}`.toLowerCase().includes(query.toLowerCase()))),[country,level,uni,query]);
- const go=(e?:FormEvent)=>{e?.preventDefault();setVisible(10);setTimeout(()=>document.querySelector("#courses")?.scrollIntoView({behavior:"smooth"}),40)};
- const pick=(c:string)=>{setCountry(c);setUni("");setDestinationOpen(null);go()};
- const sendLead=(e:FormEvent)=>{e.preventDefault();const message=`Hello Strive, my name is ${leadName}. Please send me the Beyond Borders study guide and updates. My email or phone is ${leadContact}.`;window.open(`https://wa.me/263716730064?text=${encodeURIComponent(message)}`,"_blank","noopener,noreferrer")};
- const closeNewsletter=()=>{localStorage.setItem("strive-email-prompt",String(Date.now()));setNewsletterOpen(false)};
- const sendNewsletter=(e:FormEvent)=>{e.preventDefault();const message=`Hello Strive Africa. Please add me to the student opportunities and study-abroad updates list.\n\nEmail: ${newsletterEmail}`;localStorage.setItem("strive-email-prompt",String(Date.now()));setNewsletterOpen(false);window.open(`https://wa.me/263716730064?text=${encodeURIComponent(message)}`,"_blank","noopener,noreferrer")};
- const sendAssessment=async(e:FormEvent)=>{e.preventDefault();const text=`STRIVE ELIGIBILITY ASSESSMENT\nName: ${assessmentName}\nWhatsApp / email: ${assessmentContact}\nStudy level: ${assessmentLevel}\nPreferred destination: ${assessmentCountry||"Open to recommendations"}\nQualifications / results: ${assessmentResults}\nDocuments selected: ${assessmentFiles.map(f=>f.name).join(", ")||"None"}\n\nPlease assess my eligibility and reply within 24 hours.`;try{if(assessmentFiles.length&&navigator.share&&navigator.canShare?.({files:assessmentFiles})){await navigator.share({title:"Strive eligibility assessment",text,files:assessmentFiles});setAssessmentNote("Your assessment was handed to your chosen sharing app.");return}}catch{setAssessmentNote("Sharing was cancelled. You can try again when ready.");return}window.open(`https://wa.me/263716730064?text=${encodeURIComponent(text+"\n\nPlease attach the selected documents in this WhatsApp chat before sending.")}`,"_blank","noopener,noreferrer");setAssessmentNote("WhatsApp has opened. Please attach the selected documents before sending your message.")};
- const faqs=[["How do I apply to study abroad from Zimbabwe?","Start with your academic results, preferred course, destination and budget. Strive’s study-abroad consultants in Harare can help you compare suitable universities, prepare your documents and manage the application journey."],["Are these fees final?","The figures are copied from Strive’s supplied master file. Fees, exchange rates and intakes can change, so the team will verify the current amount before you apply."],["Can you help me choose a course?","Yes. Strive connects your interests, academic background, budget and career direction to suitable study pathways."],["What if a country has no programmes listed?","Contact the team. The destination remains available for consultation while its programme list is being confirmed."],["Where can I meet the team?","Visit Office 35, 6 Chelmsford Road, Belgravia, Harare, Zimbabwe, or Number 5 Benmore Gardens, Corworx, Gauteng, South Africa. You can also call or WhatsApp +263 71 673 0064 and email batsirai@striveafriqa.com."]];
- return <main>
- <header className="siteHeader"><a className="logo" href="#top"><Image src="/strive-logo.jpeg" width={150} height={82} alt="Strive Africa" priority/></a><nav className="desktopNav"><a href="#courses">Programmes</a><a href="#destinations">Countries</a><a href="#process">How it works</a><a href="#services">Services</a><a href="#contact">Contact</a></nav><div className="headerActions"><a className="headerCta" href="#matcher">Find my options <span>↗</span></a></div><button className="menuBtn" aria-label={menu?"Close navigation":"Open navigation"} onClick={()=>setMenu(!menu)}>{menu?"×":"☰"}</button>{menu&&<div className="mobileMenu"><a href="#courses">Programmes</a><a href="#destinations">Countries</a><a href="#process">How it works</a><a href="#services">Services</a></div>}</header>
- <section className="hero" id="top"><div className="heroText" data-reveal><span className="kicker"><i/> STUDY ABROAD CONSULTANTS · HARARE</span><h1>Find the course.<br/><em>Cross the border.</em></h1><p className="lead">Search {programs.length} international study programme options, then let Strive’s Zimbabwe team guide your university application, visa preparation and flight.</p><div className="heroLinks"><a href="https://wa.me/263716730064" target="_blank">Talk to us <span>↗</span></a><a href="#matcher">Search programmes</a></div><div className="supportLine"><b>One guided journey</b><span>Placement</span><span>Application</span><span>Visa</span><span>Flight</span></div></div><div className="heroVisual" data-reveal>{heroImages.map((src,i)=><Image className={i===heroSlide?"heroSlide active":"heroSlide"} key={src} src={src} alt={`A real Strive student journey — photograph ${i+1}`} fill priority={i===0} sizes="(max-width: 720px) 100vw, 48vw"/>)}<div className="travelCaption"><span>REAL JOURNEYS · {String(heroSlide+1).padStart(2,"0")} / {String(heroImages.length).padStart(2,"0")}</span><b>They made the journey.</b><small>Real students. Real destinations. New beginnings.</small></div><div className="slideDots">{heroImages.map((_,i)=><button aria-label={`Show journey photograph ${i+1}`} className={i===heroSlide?"active":""} key={i} onClick={()=>setHeroSlide(i)}/>)}</div><div className="routePill"><i/> HARARE <span>→</span> BEYOND BORDERS</div></div></section>
- <section className="matcher" id="matcher"><div className="matcherIntro"><span>PROGRAMME FINDER</span><h2>Build your<br/>shortlist.</h2><p>Filter the supplied master list by programme, country, university and level.</p></div><form className="searchForm" onSubmit={go}><label><span>01 / PROGRAMME</span><input value={query} onChange={e=>{setQuery(e.target.value);setVisible(10)}} placeholder="Medicine, business, IT…"/></label><label><span>02 / COUNTRY</span><select value={country} onChange={e=>{setCountry(e.target.value);setUni("");setVisible(10)}}><option value="">All countries</option>{countries.map(c=><option key={c}>{c}</option>)}</select></label><label><span>03 / UNIVERSITY</span><select value={uni} onChange={e=>{setUni(e.target.value);setVisible(10)}}><option value="">All universities</option>{unis.map(u=><option key={u}>{u}</option>)}</select></label><label><span>04 / LEVEL</span><select value={level} onChange={e=>{setLevel(e.target.value);setVisible(10)}}><option value="">All levels</option><option>Diploma / Foundation</option><option>Undergraduate</option><option>Postgraduate</option></select></label><button>Search <span>↗</span></button></form></section>
- <section className="catalogue" id="courses"><div className="catalogueHead"><div><span>STRIVE MASTER CATALOGUE</span><h2>{found.length} programmes<br/><em>match your search.</em></h2></div><div className="catalogueNote"><b>{country||"All detailed destinations"}</b><p>Fees come from the supplied master file and must be verified before application.</p><button onClick={()=>{setQuery("");setCountry("");setUni("");setLevel("");setVisible(10)}}>Clear filters</button></div></div>{found.length?<><div className="programGrid">{found.slice(0,visible).map((p,i)=><article className="programCard seen" key={p.id}><div className="programIndex">{String(i+1).padStart(2,"0")} <span>{p.country}</span></div><small>{p.level}</small><h3>{p.program}</h3><p>{universityName(p.university)}</p><div className="programFoot"><div><span>Tuition fee</span><b>{money(p)}</b></div>{(p.durationLabel||p.duration)&&<div><span>Duration</span><b>{p.durationLabel||p.duration}</b></div>}<a href={`https://wa.me/263716730064?text=${encodeURIComponent(`Hello Strive, I would like to discuss ${p.program} at ${universityName(p.university)} in ${p.country}.`)}`} target="_blank">Ask Strive ↗</a></div></article>)}</div><div className="catalogueControls">{visible<found.length&&<button className="loadMore" onClick={()=>setVisible(v=>v+10)}>Show 10 more <span>{Math.min(visible,found.length)} of {found.length}</span></button>}{visible>10&&<button className="showLess" onClick={()=>{setVisible(10);document.querySelector("#courses")?.scrollIntoView({behavior:"smooth"})}}>Close extra programmes ↑</button>}</div></>:<div className="emptyCountry"><span>CONSULTATION AVAILABLE</span><h3>No listed programmes for {country||"this search"} yet.</h3><p>This destination is still available through Strive. Talk to the team and they will investigate suitable universities, programmes and current fees for you.</p><a href="https://wa.me/263716730064" target="_blank">Ask about {country||"my options"} ↗</a></div>}</section>
- <section className="process" id="process"><div className="processHead" data-reveal><span>HOW IT WORKS</span><h2>From a search to<br/><em>a boarding pass.</em></h2><p>Strive turns the study-abroad process into steps you can understand and act on.</p></div><div className="consultationStory" data-reveal><div className="storyImage"><Image src="/strive/student-consultation.webp" alt="Student reviewing an application with a consultant" width={1600} height={1024}/></div><div><span>REAL GUIDANCE</span><h3>A catalogue begins the journey. A consultant makes it personal.</h3><p>Bring your results, budget and ambitions. Strive helps organise the route from course choice through departure.</p><a href="https://wa.me/263716730064" target="_blank">Book a conversation ↗</a></div></div><div className="steps">{steps.map((s,i)=><article key={s[1]} data-reveal><b>{s[0]}</b><div><span>{i===0?"BEGIN HERE":i===4?"READY TO GO":"KEEP MOVING"}</span><h3>{s[1]}</h3><p>{s[2]}</p></div><i>↗</i></article>)}</div></section>
- <section className="destinations" id="destinations"><div className="destinationIntro" data-reveal><span>19 STUDY DESTINATIONS</span><h2>The world,<br/>made easier.</h2><p>Open a country for a quick study overview, its local currency and tuition figures taken directly from Strive’s master catalogue.</p><div className="destinationKey"><span><i/> Programmes listed</span><span><i/> Ask Strive</span></div><a href="#matcher">Use all filters ↗</a></div><div className="destinationList">{countries.map((c,i)=><a href={`/study-in/${countrySlug(c)}`} className={counts[c]?"hasPrograms":"consultOnly"} key={c} onClick={e=>{e.preventDefault();setDestinationOpen(c)}} data-reveal aria-label={`View study information for ${c}`}><span>{String(i+1).padStart(2,"0")}</span><h3>{c}</h3><p>{counts[c]?`${counts[c]} programmes`:"Consultation"}</p><i>↗</i></a>)}</div></section>
- <section className="services" id="services"><div className="sectionLabel light"><span>STRIVE SUPPORT</span><b>Before, during and after application</b></div><div className="serviceHeadline"><h2>Five services.<br/><em>One connected journey.</em></h2><p>Strive brings your university search, paperwork, preparation and travel into one guided route. Open any service to see exactly how we help.</p></div><div className="serviceGrid">{services.map((s,i)=><button key={s.title} data-reveal onClick={()=>setServiceOpen(i)}><span>0{i+1}</span><small>BEYOND BORDERS</small><h3>{s.title}</h3><p>{s.strap}</p><b>More info ↗</b></button>)}</div></section>
- <section className="journeyGallery" id="gallery"><div className="galleryHead" data-reveal><span>REAL STRIVE JOURNEYS</span><h2>From saying goodbye<br/>to settling in.</h2><p>A documented record of real departures, campus visits, student life and academic milestones—not stock photography.</p></div><div className="galleryShowcase"><button className="galleryFeature" onClick={()=>{setGalleryIndex(0);setGalleryOpen(true)}} data-reveal><Image src={galleryImages[0]} alt="A real Strive student journey" fill sizes="(max-width: 720px) 100vw, 58vw"/><span><b>01</b> A journey begins <i>View photograph ↗</i></span></button><div className="galleryMosaic">{galleryImages.slice(1,5).map((src,i)=><button key={src} onClick={()=>{setGalleryIndex(i+1);setGalleryOpen(true)}} data-reveal><Image src={src} alt={`A real Strive student journey — photograph ${i+2}`} fill sizes="(max-width: 720px) 50vw, 20vw"/><span>{String(i+2).padStart(2,"0")}</span></button>)}</div></div><div className="galleryFooter"><div><b>21</b><span>real journey<br/>photographs</span></div><p>Every image in this collection was supplied by Strive Africa as part of its student journey record.</p><button onClick={()=>{setGalleryIndex(0);setGalleryOpen(true)}}>Open the full gallery ↗</button></div></section>
- <section className="journal" id="journal"><div className="journalTitle" data-reveal><span>THE BEYOND BORDERS JOURNAL</span><h2>Useful before<br/>you even apply.</h2><p>Short, practical guidance for students and families planning an international education.</p></div><div className="journalStories"><article data-reveal><small>CHOOSING WELL · 5 MIN</small><h3>Choose a university by fit—not only by country.</h3><p>A clear way to compare programme relevance, entry requirements, tuition, location and long-term opportunity.</p><a href="#matcher">Explore your options ↗</a></article><article data-reveal><small>APPLICATIONS · 4 MIN</small><h3>The documents worth preparing early.</h3><p>Start organising results, identification, financial information and supporting documents before deadlines arrive.</p><a href="#process">See the journey ↗</a></article><article data-reveal><small>PRE-DEPARTURE · 6 MIN</small><h3>From offer letter to boarding gate.</h3><p>What happens after admission: acceptance, visa preparation, travel planning and arriving ready.</p><a href="#services">See Strive support ↗</a></article></div><form className="leadCapture" onSubmit={sendLead} data-reveal><div><span>FREE STUDY GUIDE + USEFUL UPDATES</span><h3>Stay one step ahead.</h3><p>Leave your details and continue on WhatsApp to request the guide. Your information is sent to Strive only when you choose to send the message.</p></div><label><span>Your name</span><input required value={leadName} onChange={e=>setLeadName(e.target.value)} placeholder="First and last name"/></label><label><span>Email or phone</span><input required value={leadContact} onChange={e=>setLeadContact(e.target.value)} placeholder="How should we reach you?"/></label><button>Request the guide ↗</button></form></section>
- <section className="studentVoices"><div className="voicesImage" data-reveal><Image src="/strive/journeys/journey-03.jpeg" alt="Students marking an academic milestone" fill sizes="(max-width: 720px) 100vw, 50vw"/><div className="voicesSeal"><b>REAL</b><span>student<br/>journeys</span></div></div><div className="voicesCopy" data-reveal><span>STUDENT EXPERIENCES</span><h2>Trust is built<br/>on real journeys.</h2><p>Families deserve more than promises. Strive documents student departures, arrivals, campuses and milestones, and only publishes feedback after the student’s identity and wording are confirmed.</p><div className="voicePrinciples"><div><b>01</b><span>Real student</span></div><div><b>02</b><span>Confirmed wording</span></div><div><b>03</b><span>Published with permission</span></div></div><a href={`https://wa.me/263716730064?text=${encodeURIComponent("Hello Strive, I would like to share a review of my student journey with you.")}`} target="_blank">Share a verified experience ↗</a><small>Have you travelled with Strive? Your honest feedback can help another family decide with confidence.</small></div></section>
- <section className="faq" id="faq"><div><span>QUESTIONS, ANSWERED</span><h2>Before you<br/>get started.</h2></div><div className="faqList">{faqs.map((f,i)=><article key={f[0]}><button onClick={()=>setFaq(faq===i?-1:i)}><span>0{i+1}</span><b>{f[0]}</b><i>{faq===i?"−":"+"}</i></button>{faq===i&&<p>{f[1]}</p>}</article>)}</div></section>
- <section className="aboutSection" id="about"><div className="aboutMarker" data-reveal><span>WHO WE ARE</span><b>Zimbabwe<br/>→ the world</b><small>Education guidance with international reach.</small></div><div className="aboutStory" data-reveal><h2>Ambition should<br/>travel <em>further.</em></h2><div className="aboutCopy"><p>Strivio Education Solutions is a Zimbabwe-based education consultancy dedicated to connecting students with quality international study opportunities. Through strategic partnerships with universities and education providers across Europe, Asia, Africa, the Americas, and beyond, we have successfully assisted students in pursuing their academic ambitions abroad.</p><p>Our directors bring extensive industry experience and international exposure, enabling us to provide informed, professional guidance throughout the study-abroad journey, from selecting suitable institutions and programmes to managing applications and enrolment.</p><p>Strivio Education Solutions also serves as a student recruitment supplier to Nexafriqa (Pty) Ltd, a South Africa-based consultancy. Through this relationship, Strivio supports Nexafriqa’s recruitment activities across Southern Africa, helping students access a wider network of international education opportunities.</p></div><div className="aboutSocials"><span>FOLLOW THE JOURNEY</span><a href="https://www.facebook.com/afriqastrive" target="_blank" rel="noreferrer"><b>Facebook</b><i>↗</i></a><a href="https://www.tiktok.com/@striveafrica.edu" target="_blank" rel="noreferrer"><b>TikTok</b><i>↗</i></a><a href="https://www.instagram.com/strive_africa?igsi=OTFqeTc0dm53NzRo" target="_blank" rel="noreferrer"><b>Instagram</b><i>↗</i></a></div></div></section>
- <section className="contact" id="contact"><span>READY WHEN YOU ARE</span><h2>Let’s make your next<br/>step <em>clear.</em></h2><p>Meet the Strive team in Zimbabwe or South Africa, or start the conversation online.</p><div className="contactOffices"><article><small>HARARE · ZIMBABWE</small><b>6 Chelmsford Road</b><p>Office 35, Belgravia<br/>Harare, Zimbabwe</p></article><article><small>GAUTENG · SOUTH AFRICA</small><b>Number 5 Benmore Gardens</b><p>Corworx, Gauteng<br/>South Africa</p></article></div><div className="contactActions"><a href="https://wa.me/263716730064" target="_blank">WhatsApp Strive ↗</a><a href="tel:+263716730064">Call +263 71 673 0064</a><a href="mailto:batsirai@striveafriqa.com">batsirai@striveafriqa.com ↗</a></div></section>
- <footer><div className="footerAbout"><a href="#top"><Image src="/strive-logo.jpeg" width={170} height={92} alt="Strive Africa"/></a><p>Study abroad guidance from first search to final departure.</p></div><div><small>EXPLORE</small><a href="#courses">Programmes & fees</a><a href="#destinations">Countries</a><a href="#gallery">Student journeys</a><a href="#about">Who we are</a></div><div><small>SERVICES</small><a href="#services">University placement</a><a href="#services">Applications</a><a href="#services">Visa & flights</a></div><div><small>VISIT US</small><p><b>Zimbabwe</b><br/>6 Chelmsford Road, Office 35<br/>Belgravia, Harare</p><p><b>South Africa</b><br/>Number 5 Benmore Gardens<br/>Corworx, Gauteng</p><a href="tel:+263716730064">+263 71 673 0064</a><a href="mailto:batsirai@striveafriqa.com">batsirai@striveafriqa.com</a></div><div className="footerSocials"><small>FOLLOW STRIVE</small><a href="https://www.facebook.com/afriqastrive" target="_blank" rel="noreferrer">Facebook ↗</a><a href="https://www.tiktok.com/@striveafrica.edu" target="_blank" rel="noreferrer">TikTok ↗</a><a href="https://www.instagram.com/strive_africa?igsi=OTFqeTc0dm53NzRo" target="_blank" rel="noreferrer">Instagram ↗</a></div><div className="footerBottom"><span>© 2026 Strive Africa</span><a href="#top">Back to top ↑</a></div></footer>
- {serviceOpen!==null&&<div className="serviceModalWrap" onMouseDown={e=>e.target===e.currentTarget&&setServiceOpen(null)}><article className="serviceModal" role="dialog" aria-modal="true" aria-labelledby="service-title"><button className="close" onClick={()=>setServiceOpen(null)} aria-label="Close service details">×</button><span>0{serviceOpen+1} / STRIVE SUPPORT</span><h2 id="service-title">{services[serviceOpen].title}</h2><h3>{services[serviceOpen].strap}</h3><p>{services[serviceOpen].intro}</p><small>OUR SUPPORT INCLUDES</small><ul>{services[serviceOpen].items.map(item=><li key={item}><i>✓</i>{item}</li>)}</ul><b>{services[serviceOpen].close}</b><a href="https://wa.me/263716730064" target="_blank">Talk to us about this service ↗</a></article></div>}
- {destinationOpen&&<div className="destinationModalWrap" onMouseDown={e=>e.target===e.currentTarget&&setDestinationOpen(null)}><article className="destinationModal" role="dialog" aria-modal="true" aria-labelledby="destination-title"><button className="close" onClick={()=>setDestinationOpen(null)} aria-label="Close destination information">×</button><span>STUDY DESTINATION · STRIVE AFRICA</span><h2 id="destination-title">{destinationOpen}</h2><p className="destinationSummary">{countryNotes[destinationOpen].summary}</p><div className="destinationFacts"><div><small>LOCAL CURRENCY</small><b>{countryNotes[destinationOpen].currency}</b></div><div><small>PROGRAMMES LISTED</small><b>{destinationStats[destinationOpen].programmes||"Available by consultation"}</b></div><div><small>UNIVERSITIES LISTED</small><b>{destinationStats[destinationOpen].universities||"Being confirmed"}</b></div></div><div className="destinationFees"><small>CATALOGUE TUITION RANGE</small>{destinationStats[destinationOpen].ranges.length?destinationStats[destinationOpen].ranges.map((range:string)=><b key={range}>{range}</b>):<><b>Ask Strive for current fees</b><p>No verified fee rows for this country are in the supplied master file yet.</p></>}</div><p className="feeNotice">Tuition only. Figures come from Strive’s supplied catalogue and may vary by programme, intake and institution. Living costs, visa, insurance, flights and other charges are separate.</p><div className="destinationActions">{counts[destinationOpen]?<button onClick={()=>pick(destinationOpen)}>View {counts[destinationOpen]} programmes ↗</button>:<a href={`https://wa.me/263716730064?text=${encodeURIComponent(`Hello Strive, I would like current study and fee information for ${destinationOpen}.`)}`} target="_blank">Ask Strive about {destinationOpen} ↗</a>}<button className="secondary" onClick={()=>setDestinationOpen(null)}>Close</button></div></article></div>}
- {galleryOpen&&<div className="galleryModal" role="dialog" aria-modal="true" aria-label="Strive student journey gallery"><button className="galleryClose" onClick={()=>setGalleryOpen(false)} aria-label="Close gallery">×</button><div className="galleryCanvas"><Image key={galleryImages[galleryIndex]} src={galleryImages[galleryIndex]} alt={`A real Strive student journey — photograph ${galleryIndex+1}`} fill sizes="100vw"/></div><div className="galleryNav"><button onClick={()=>setGalleryIndex(i=>(i-1+galleryImages.length)%galleryImages.length)} aria-label="Previous photograph">←</button><span><b>{String(galleryIndex+1).padStart(2,"0")}</b> / {galleryImages.length} · REAL STRIVE JOURNEYS</span><button onClick={()=>setGalleryIndex(i=>(i+1)%galleryImages.length)} aria-label="Next photograph">→</button></div><div className="galleryThumbs">{galleryImages.map((src,i)=><button className={i===galleryIndex?"active":""} key={src} onClick={()=>setGalleryIndex(i)} aria-label={`Show photograph ${i+1}`}><Image src={src} alt="" fill sizes="70px"/></button>)}</div></div>}
- {newsletterOpen&&!eligibilityOpen&&!destinationOpen&&serviceOpen===null&&!galleryOpen&&<div className="newsletterWrap" onMouseDown={e=>e.target===e.currentTarget&&closeNewsletter()}><form className="newsletterPopup" onSubmit={sendNewsletter} role="dialog" aria-modal="true" aria-labelledby="newsletter-title"><button type="button" className="close" onClick={closeNewsletter} aria-label="Close email signup">×</button><span>STUDENT OPPORTUNITIES · STRIVE AFRICA</span><h2 id="newsletter-title">Study options,<br/><em>sent your way.</em></h2><p>Get programme updates, application reminders and practical study-abroad guidance from the Strive team.</p><label><span>Your email address</span><input type="email" required autoComplete="email" value={newsletterEmail} onChange={e=>setNewsletterEmail(e.target.value)} placeholder="student@example.com"/></label><button className="newsletterSubmit">Join via WhatsApp ↗</button><small>WhatsApp will open with your email ready to send to +263 71 673 0064. Nothing is sent until you press Send.</small></form></div>}
- {eligibilityOpen&&<div className="eligibilityWrap" onMouseDown={e=>e.target===e.currentTarget&&setEligibilityOpen(false)}><form className="eligibilityForm" onSubmit={sendAssessment} role="dialog" aria-modal="true" aria-labelledby="eligibility-title"><button type="button" className="close" onClick={()=>setEligibilityOpen(false)} aria-label="Close eligibility checker">×</button><div className="eligibilityIntro"><span>FREE · ANSWERED WITHIN 24 HOURS</span><h2 id="eligibility-title">Are you eligible<br/>to study abroad?</h2><p>Send your academic information to Strive for a human assessment of suitable countries, programmes and entry pathways.</p><div><b>01</b> Complete your profile</div><div><b>02</b> Select your documents</div><div><b>03</b> Send securely from your device</div></div><div className="eligibilityFields"><div className="fieldPair"><label><span>Full name</span><input required value={assessmentName} onChange={e=>setAssessmentName(e.target.value)} placeholder="Your full name"/></label><label><span>WhatsApp or email</span><input required value={assessmentContact} onChange={e=>setAssessmentContact(e.target.value)} placeholder="How Strive should reply"/></label></div><div className="fieldPair"><label><span>Applying for</span><select value={assessmentLevel} onChange={e=>setAssessmentLevel(e.target.value)}><option>Undergraduate</option><option>Postgraduate</option><option>Foundation / Diploma</option></select></label><label><span>Preferred country</span><select value={assessmentCountry} onChange={e=>setAssessmentCountry(e.target.value)}><option value="">Open to recommendations</option>{countries.map(c=><option key={c}>{c}</option>)}</select></label></div><label><span>{assessmentLevel==="Postgraduate"?"Degree and transcript summary":"O Level and A Level results summary"}</span><textarea required rows={4} value={assessmentResults} onChange={e=>setAssessmentResults(e.target.value)} placeholder={assessmentLevel==="Postgraduate"?"Degree, institution, classification and key subjects":"Subjects and grades, plus any certificates or diplomas"}/></label><label className="fileDrop"><span>Passport, results and transcripts</span><input type="file" multiple required accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const chosen=Array.from(e.target.files||[]);const accepted=chosen.filter(f=>f.size<=10*1024*1024);setAssessmentFiles(accepted);setAssessmentNote(accepted.length<chosen.length?"Some files were larger than 10 MB and were not selected.":"")}}/><b>{assessmentFiles.length?`${assessmentFiles.length} document${assessmentFiles.length===1?"":"s"} ready`:"Choose PDF, JPG or PNG files"}</b><small>Maximum 10 MB per file. Files stay on this device until you choose a sharing app or continue to WhatsApp.</small></label><label className="consent"><input type="checkbox" required/><span>I consent to sharing these details and documents with Strive Africa for an eligibility assessment.</span></label>{assessmentNote&&<p className="assessmentNote">{assessmentNote}</p>}<button className="assessmentSubmit">Send for assessment ↗</button><small className="assessmentLegal">This is a preliminary assessment, not a university admission or visa decision. Strive aims to respond within 24 hours.</small></div></form></div>}
- <button id="eligibility-checker" className="eligibilityFloat" onClick={()=>{setEligibilityOpen(true);setAssessmentNote("")}}><i>✓</i><span><b>Are you eligible?</b><small>Check now · 24hr answer</small></span></button>
- <StriveFloatingChat />
- </main>}
+const countryNotes: Record<string, { currency: string; summary: string }> = {
+  Russia: {
+    currency: "Russian ruble (RUB)",
+    summary:
+      "A broad university market with medicine, engineering, technology and other academic routes across several cities.",
+  },
+  Poland: {
+    currency: "Polish złoty (PLN)",
+    summary:
+      "A European study destination with English-taught options and a strong selection of business, technology and health programmes.",
+  },
+  Mauritius: {
+    currency: "Mauritian rupee (MUR)",
+    summary:
+      "An island study destination offering a multicultural environment and a practical regional option for African students.",
+  },
+  Malaysia: {
+    currency: "Malaysian ringgit (MYR)",
+    summary:
+      "A diverse education hub with a wide choice of institutions, programme levels and comparatively accessible study routes.",
+  },
+  India: {
+    currency: "Indian rupee (INR)",
+    summary:
+      "A large education market with extensive course choice across technology, business, health sciences and the humanities.",
+  },
+  Lithuania: {
+    currency: "Euro (EUR)",
+    summary:
+      "A compact European destination with internationally oriented programmes and pathways in business and technology.",
+  },
+  Georgia: {
+    currency: "Georgian lari (GEL)",
+    summary:
+      "A growing study destination known for internationally accessible university options, including medical pathways.",
+  },
+  Hungary: {
+    currency: "Hungarian forint (HUF)",
+    summary:
+      "A Central European destination with established universities and English-taught routes across several disciplines.",
+  },
+  Uzbekistan: {
+    currency: "Uzbekistani soʻm (UZS)",
+    summary:
+      "An emerging destination with affordable programme options, particularly within medicine and related fields.",
+  },
+  UAE: {
+    currency: "UAE dirham (AED)",
+    summary:
+      "A globally connected study environment with modern campuses and access to business, technology and professional networks.",
+  },
+  Bulgaria: {
+    currency: "Bulgarian lev (BGN)",
+    summary:
+      "A European destination offering university pathways in medicine, business, engineering and other professional fields.",
+  },
+  France: {
+    currency: "Euro (EUR)",
+    summary:
+      "A major European education centre with routes in business, arts, engineering, science and hospitality.",
+  },
+  Greece: {
+    currency: "Euro (EUR)",
+    summary:
+      "A Mediterranean study destination with a growing range of internationally taught academic programmes.",
+  },
+  Ireland: {
+    currency: "Euro (EUR)",
+    summary:
+      "An English-speaking European destination with strong links to technology, business, research and global employers.",
+  },
+  Germany: {
+    currency: "Euro (EUR)",
+    summary:
+      "A respected European study destination with strong engineering, technology, research and applied-science pathways.",
+  },
+  Australia: {
+    currency: "Australian dollar (AUD)",
+    summary:
+      "A globally recognised destination with broad course choice, established student services and multicultural cities.",
+  },
+  "United Kingdom": {
+    currency: "Pound sterling (GBP)",
+    summary:
+      "A well-established study destination offering globally recognised qualifications and a wide range of specialist programmes.",
+  },
+  Canada: {
+    currency: "Canadian dollar (CAD)",
+    summary:
+      "A multicultural destination with university and college pathways across academic, technical and career-focused fields.",
+  },
+  Spain: {
+    currency: "Euro (EUR)",
+    summary:
+      "A vibrant European destination offering programmes in business, hospitality, technology and other international fields.",
+  },
+};
+const steps = [
+  [
+    "01",
+    "Tell us about you",
+    "Share your interests, academic background, destination and budget.",
+  ],
+  [
+    "02",
+    "Explore suitable options",
+    "Compare programmes and universities from Strive’s master list.",
+  ],
+  [
+    "03",
+    "Prepare your application",
+    "Get guidance on documents, statements, deadlines and submission.",
+  ],
+  [
+    "04",
+    "Move from offer to visa",
+    "Understand your offer and prepare for the student visa process.",
+  ],
+  [
+    "05",
+    "Book and depart",
+    "Plan your journey and flight with support before departure.",
+  ],
+];
+const services = [
+  {
+    title: "University placements",
+    strap: "Find the right university for your future",
+    intro:
+      "We assess your academic results, career interests, budget and personal goals before recommending suitable study options—from Foundation and Certificate routes to Bachelor’s and Master’s programmes.",
+    items: [
+      "Reviewing your academic qualifications",
+      "Recommending suitable countries and universities",
+      "Identifying programmes that match your career goals",
+      "Comparing tuition fees, entry requirements and intakes",
+      "Exploring alternative pathways where direct entry is unavailable",
+      "Helping you make an informed final choice",
+    ],
+    close: "Let us help you find the right place to study.",
+  },
+  {
+    title: "Application support",
+    strap: "Making your university application simple and manageable",
+    intro:
+      "STRIVE Africa guides you through every stage so that your application is complete, accurate and professionally prepared, reducing mistakes and unnecessary delays.",
+    items: [
+      "Checking university entry requirements",
+      "Reviewing your academic and personal documents",
+      "Helping you complete application forms",
+      "Assisting with motivation letters and personal statements",
+      "Submitting applications to selected institutions",
+      "Following up on application progress",
+      "Explaining offer letters and admission conditions",
+      "Guiding you through tuition and acceptance procedures",
+    ],
+    close: "Start your application with professional support.",
+  },
+  {
+    title: "Career guidance",
+    strap: "Connect your strengths and ambitions to the right study path",
+    intro:
+      "We help you understand your strengths, interests and long-term goals before making an important study decision—whether you know what you want or are still uncertain.",
+    items: [
+      "Discussing your interests, abilities and ambitions",
+      "Reviewing your academic performance",
+      "Identifying suitable career options",
+      "Recommending relevant courses and qualifications",
+      "Explaining available study pathways",
+      "Helping you understand potential career opportunities",
+      "Supporting parents and students in making informed decisions",
+    ],
+    close: "Your career journey begins with the right decision.",
+  },
+  {
+    title: "Visa centre",
+    strap: "Prepare confidently for every stage of your visa application",
+    intro:
+      "Visa requirements differ between countries. We provide guidance based on the relevant embassy, immigration authority and institution requirements while the final decision remains with immigration.",
+    items: [
+      "Providing a personalised visa-document checklist",
+      "Reviewing financial and sponsorship documents",
+      "Assisting with visa application forms",
+      "Guiding students on medical examinations and police clearances",
+      "Supporting document certification and legalisation",
+      "Assisting with visa appointment preparation",
+      "Conducting interview preparation where required",
+      "Reviewing the application before submission",
+      "Providing updates and guidance throughout the process",
+    ],
+    close: "Prepare your student visa application with confidence.",
+  },
+  {
+    title: "Flight bookings",
+    strap: "Turn your admission into a supported departure plan",
+    intro:
+      "Once your admission and visa have been secured, we help make your transition from home to your study destination easier and less stressful.",
+    items: [
+      "Comparing suitable flight options",
+      "Helping you select practical travel dates and routes",
+      "Assisting with flight reservations and bookings",
+      "Checking university reporting and arrival dates",
+      "Providing baggage and travel-document guidance",
+      "Preparing a pre-departure checklist",
+      "Coordinating airport pickup where available",
+      "Supporting accommodation and arrival arrangements",
+      "Providing important information about your destination",
+    ],
+    close: "Let us help you plan your departure.",
+  },
+];
+const heroImages = [1, 6, 8, 11, 13].map(
+  (n) => `/strive/journeys/journey-${String(n).padStart(2, "0")}.jpeg`,
+);
+const galleryImages = Array.from(
+  { length: 21 },
+  (_, i) => `/strive/journeys/journey-${String(i + 1).padStart(2, "0")}.jpeg`,
+);
+const money = (p: P) => {
+  const n = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
+    p.fee,
+  );
+  return p.currency === "USD"
+    ? `$${n}`
+    : p.currency === "EUR"
+      ? `€${n}`
+      : `${n} · currency not stated`;
+};
+export default function Home() {
+  const [country, setCountry] = useState(""),
+    [query, setQuery] = useState(""),
+    [level, setLevel] = useState(""),
+    [uni, setUni] = useState(""),
+    [visible, setVisible] = useState(10),
+    [menu, setMenu] = useState(false),
+    [faq, setFaq] = useState(0),
+    [heroSlide, setHeroSlide] = useState(0),
+    [serviceOpen, setServiceOpen] = useState<number | null>(null),
+    [destinationOpen, setDestinationOpen] = useState<string | null>(null),
+    [leadName, setLeadName] = useState(""),
+    [leadContact, setLeadContact] = useState(""),
+    [newsletterOpen, setNewsletterOpen] = useState(false),
+    [newsletterEmail, setNewsletterEmail] = useState(""),
+    [eligibilityOpen, setEligibilityOpen] = useState(false),
+    [assessmentName, setAssessmentName] = useState(""),
+    [assessmentContact, setAssessmentContact] = useState(""),
+    [assessmentLevel, setAssessmentLevel] = useState("Undergraduate"),
+    [assessmentCountry, setAssessmentCountry] = useState(""),
+    [assessmentResults, setAssessmentResults] = useState(""),
+    [assessmentFiles, setAssessmentFiles] = useState<File[]>([]),
+    [assessmentNote, setAssessmentNote] = useState(""),
+    [galleryOpen, setGalleryOpen] = useState(false),
+    [galleryIndex, setGalleryIndex] = useState(0);
+  useEffect(() => {
+    const o = new IntersectionObserver(
+      (es) =>
+        es.forEach((e) => e.isIntersecting && e.target.classList.add("seen")),
+      { threshold: 0.08 },
+    );
+    document.querySelectorAll("[data-reveal]").forEach((n) => o.observe(n));
+    return () => o.disconnect();
+  }, []);
+  useEffect(() => {
+    const timer = window.setInterval(
+      () => setHeroSlide((i) => (i + 1) % heroImages.length),
+      4000,
+    );
+    return () => window.clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    const last = Number(localStorage.getItem("strive-email-prompt") || 0);
+    if (Date.now() - last < 7 * 24 * 60 * 60 * 1000) return;
+    const timer = window.setTimeout(() => setNewsletterOpen(true), 7000);
+    return () => window.clearTimeout(timer);
+  }, []);
+  const counts = useMemo(
+    () =>
+      Object.fromEntries(
+        countries.map((c) => [
+          c,
+          programs.filter((p) => p.country === c).length,
+        ]),
+      ),
+    [],
+  );
+  const destinationStats = useMemo(
+    () =>
+      Object.fromEntries(
+        countries.map((c) => {
+          const rows = programs.filter((p) => p.country === c);
+          const ranges = [
+            ...new Set(rows.map((p) => p.currency || "Not stated")),
+          ]
+            .map((currency) => {
+              const fees = rows
+                .filter(
+                  (p) => (p.currency || "Not stated") === currency && p.fee > 0,
+                )
+                .map((p) => p.fee);
+              if (!fees.length) return null;
+              const symbol =
+                currency === "USD" ? "$" : currency === "EUR" ? "€" : "";
+              return `${symbol}${Math.min(...fees).toLocaleString("en-US")}–${symbol}${Math.max(...fees).toLocaleString("en-US")} ${currency === "Not stated" ? "(currency not stated)" : currency}`;
+            })
+            .filter((range): range is string => Boolean(range));
+          return [
+            c,
+            {
+              programmes: rows.length,
+              universities: new Set(
+                rows.map((p) => universityName(p.university)),
+              ).size,
+              ranges,
+            },
+          ];
+        }),
+      ),
+    [],
+  );
+  const unis = useMemo(
+    () =>
+      [
+        ...new Set(
+          programs
+            .filter((p) => !country || p.country === country)
+            .map((p) => universityName(p.university)),
+        ),
+      ].sort((a, b) => a.localeCompare(b)),
+    [country],
+  );
+  const found = useMemo(
+    () =>
+      programs.filter(
+        (p) =>
+          (!country || p.country === country) &&
+          (!level || p.level === level) &&
+          (!uni || universityName(p.university) === uni) &&
+          (!query ||
+            `${p.program} ${universityName(p.university)}`
+              .toLowerCase()
+              .includes(query.toLowerCase())),
+      ),
+    [country, level, uni, query],
+  );
+  const go = (e?: FormEvent) => {
+    e?.preventDefault();
+    setVisible(10);
+    setTimeout(
+      () =>
+        document
+          .querySelector("#courses")
+          ?.scrollIntoView({ behavior: "smooth" }),
+      40,
+    );
+  };
+  const pick = (c: string) => {
+    setCountry(c);
+    setUni("");
+    setDestinationOpen(null);
+    go();
+  };
+  const sendLead = (e: FormEvent) => {
+    e.preventDefault();
+    const message = `Hello Strive, my name is ${leadName}. Please send me the Beyond Borders study guide and updates. My email or phone is ${leadContact}.`;
+    window.open(
+      `https://wa.me/263716730064?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  };
+  const closeNewsletter = () => {
+    localStorage.setItem("strive-email-prompt", String(Date.now()));
+    setNewsletterOpen(false);
+  };
+  const sendNewsletter = (e: FormEvent) => {
+    e.preventDefault();
+    const message = `Hello Strive Africa. Please add me to the student opportunities and study-abroad updates list.\n\nEmail: ${newsletterEmail}`;
+    localStorage.setItem("strive-email-prompt", String(Date.now()));
+    setNewsletterOpen(false);
+    window.open(
+      `https://wa.me/263716730064?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  };
+  const assessmentEmail = "batsirai@striveafriqa.com";
+  const sendAssessment = (e: FormEvent) => {
+    e.preventDefault();
+    const text = `STRIVE ELIGIBILITY ASSESSMENT\n\nName: ${assessmentName}\nWhatsApp / email: ${assessmentContact}\nStudy level: ${assessmentLevel}\nPreferred destination: ${assessmentCountry || "Open to recommendations"}\nQualifications / results: ${assessmentResults}\nDocuments to attach: ${assessmentFiles.map((f) => f.name).join(", ") || "None"}\n\nPlease assess my eligibility and reply within 24 hours.\n\nIMPORTANT: Please attach the documents listed above before sending this email.`;
+    setAssessmentNote(
+      `Your email app is opening with ${assessmentEmail} already in the To field. Please attach your selected documents before sending.`,
+    );
+    window.location.href = `mailto:${assessmentEmail}?subject=${encodeURIComponent("STRIVE eligibility assessment")}&body=${encodeURIComponent(text)}`;
+  };
+  const faqs = [
+    [
+      "How do I apply to study abroad from Zimbabwe?",
+      "Start with your academic results, preferred course, destination and budget. Strive’s study-abroad consultants in Harare can help you compare suitable universities, prepare your documents and manage the application journey.",
+    ],
+    [
+      "Are these fees final?",
+      "The figures are copied from Strive’s supplied master file. Fees, exchange rates and intakes can change, so the team will verify the current amount before you apply.",
+    ],
+    [
+      "Can you help me choose a course?",
+      "Yes. Strive connects your interests, academic background, budget and career direction to suitable study pathways.",
+    ],
+    [
+      "What if a country has no programmes listed?",
+      "Contact the team. The destination remains available for consultation while its programme list is being confirmed.",
+    ],
+    [
+      "Where can I meet the team?",
+      "Visit Office 35, 6 Chelmsford Road, Belgravia, Harare, Zimbabwe, or Number 5 Benmore Gardens, Corworx, Gauteng, South Africa. You can also call or WhatsApp +263 71 673 0064 and email batsirai@striveafriqa.com.",
+    ],
+  ];
+  return (
+    <main>
+      <header className="siteHeader">
+        <a className="logo" href="#top">
+          <Image
+            src="/strive-logo.jpeg"
+            width={150}
+            height={82}
+            alt="Strive Africa"
+            priority
+          />
+        </a>
+        <nav className="desktopNav">
+          <a href="#courses">Programmes</a>
+          <a href="#destinations">Countries</a>
+          <a href="#process">How it works</a>
+          <a href="#services">Services</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <div className="headerActions">
+          <a className="headerCta" href="#matcher">
+            Find my options <span>↗</span>
+          </a>
+        </div>
+        <button
+          className="menuBtn"
+          aria-label={menu ? "Close navigation" : "Open navigation"}
+          onClick={() => setMenu(!menu)}
+        >
+          {menu ? "×" : "☰"}
+        </button>
+        {menu && (
+          <div className="mobileMenu">
+            <a href="#courses">Programmes</a>
+            <a href="#destinations">Countries</a>
+            <a href="#process">How it works</a>
+            <a href="#services">Services</a>
+          </div>
+        )}
+      </header>
+      <section className="hero" id="top">
+        <div className="heroText" data-reveal>
+          <span className="kicker">
+            <i /> STUDY ABROAD CONSULTANTS · HARARE
+          </span>
+          <h1>
+            Find the course.
+            <br />
+            <em>Cross the border.</em>
+          </h1>
+          <p className="lead">
+            Search {programs.length} international study programme options, then
+            let Strive’s Zimbabwe team guide your university application, visa
+            preparation and flight.
+          </p>
+          <div className="heroLinks">
+            <a href="https://wa.me/263716730064" target="_blank">
+              Talk to us <span>↗</span>
+            </a>
+            <a href="#matcher">Search programmes</a>
+          </div>
+          <div className="supportLine">
+            <b>One guided journey</b>
+            <span>Placement</span>
+            <span>Application</span>
+            <span>Visa</span>
+            <span>Flight</span>
+          </div>
+        </div>
+        <div className="heroVisual" data-reveal>
+          {heroImages.map((src, i) => (
+            <Image
+              className={i === heroSlide ? "heroSlide active" : "heroSlide"}
+              key={src}
+              src={src}
+              alt={`A real Strive student journey — photograph ${i + 1}`}
+              fill
+              priority={i === 0}
+              sizes="(max-width: 720px) 100vw, 48vw"
+            />
+          ))}
+          <div className="travelCaption">
+            <span>
+              REAL JOURNEYS · {String(heroSlide + 1).padStart(2, "0")} /{" "}
+              {String(heroImages.length).padStart(2, "0")}
+            </span>
+            <b>They made the journey.</b>
+            <small>Real students. Real destinations. New beginnings.</small>
+          </div>
+          <div className="slideDots">
+            {heroImages.map((_, i) => (
+              <button
+                aria-label={`Show journey photograph ${i + 1}`}
+                className={i === heroSlide ? "active" : ""}
+                key={i}
+                onClick={() => setHeroSlide(i)}
+              />
+            ))}
+          </div>
+          <div className="routePill">
+            <i /> HARARE <span>→</span> BEYOND BORDERS
+          </div>
+        </div>
+      </section>
+      <section className="matcher" id="matcher">
+        <div className="matcherIntro">
+          <span>PROGRAMME FINDER</span>
+          <h2>
+            Build your
+            <br />
+            shortlist.
+          </h2>
+          <p>
+            Filter the supplied master list by programme, country, university
+            and level.
+          </p>
+        </div>
+        <form className="searchForm" onSubmit={go}>
+          <label>
+            <span>01 / PROGRAMME</span>
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setVisible(10);
+              }}
+              placeholder="Medicine, business, IT…"
+            />
+          </label>
+          <label>
+            <span>02 / COUNTRY</span>
+            <select
+              value={country}
+              onChange={(e) => {
+                setCountry(e.target.value);
+                setUni("");
+                setVisible(10);
+              }}
+            >
+              <option value="">All countries</option>
+              {countries.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>03 / UNIVERSITY</span>
+            <select
+              value={uni}
+              onChange={(e) => {
+                setUni(e.target.value);
+                setVisible(10);
+              }}
+            >
+              <option value="">All universities</option>
+              {unis.map((u) => (
+                <option key={u}>{u}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>04 / LEVEL</span>
+            <select
+              value={level}
+              onChange={(e) => {
+                setLevel(e.target.value);
+                setVisible(10);
+              }}
+            >
+              <option value="">All levels</option>
+              <option>Diploma / Foundation</option>
+              <option>Undergraduate</option>
+              <option>Postgraduate</option>
+            </select>
+          </label>
+          <button>
+            Search <span>↗</span>
+          </button>
+        </form>
+      </section>
+      <section className="catalogue" id="courses">
+        <div className="catalogueHead">
+          <div>
+            <span>STRIVE MASTER CATALOGUE</span>
+            <h2>
+              {found.length} programmes
+              <br />
+              <em>match your search.</em>
+            </h2>
+          </div>
+          <div className="catalogueNote">
+            <b>{country || "All detailed destinations"}</b>
+            <p>
+              Fees come from the supplied master file and must be verified
+              before application.
+            </p>
+            <button
+              onClick={() => {
+                setQuery("");
+                setCountry("");
+                setUni("");
+                setLevel("");
+                setVisible(10);
+              }}
+            >
+              Clear filters
+            </button>
+          </div>
+        </div>
+        {found.length ? (
+          <>
+            <div className="programGrid">
+              {found.slice(0, visible).map((p, i) => (
+                <article className="programCard seen" key={p.id}>
+                  <div className="programIndex">
+                    {String(i + 1).padStart(2, "0")} <span>{p.country}</span>
+                  </div>
+                  <small>{p.level}</small>
+                  <h3>{p.program}</h3>
+                  <p>{universityName(p.university)}</p>
+                  <div className="programFoot">
+                    <div>
+                      <span>Tuition fee</span>
+                      <b>{money(p)}</b>
+                    </div>
+                    {(p.durationLabel || p.duration) && (
+                      <div>
+                        <span>Duration</span>
+                        <b>{p.durationLabel || p.duration}</b>
+                      </div>
+                    )}
+                    <a
+                      href={`https://wa.me/263716730064?text=${encodeURIComponent(`Hello Strive, I would like to discuss ${p.program} at ${universityName(p.university)} in ${p.country}.`)}`}
+                      target="_blank"
+                    >
+                      Ask Strive ↗
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="catalogueControls">
+              {visible < found.length && (
+                <button
+                  className="loadMore"
+                  onClick={() => setVisible((v) => v + 10)}
+                >
+                  Show 10 more{" "}
+                  <span>
+                    {Math.min(visible, found.length)} of {found.length}
+                  </span>
+                </button>
+              )}
+              {visible > 10 && (
+                <button
+                  className="showLess"
+                  onClick={() => {
+                    setVisible(10);
+                    document
+                      .querySelector("#courses")
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  Close extra programmes ↑
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="emptyCountry">
+            <span>CONSULTATION AVAILABLE</span>
+            <h3>No listed programmes for {country || "this search"} yet.</h3>
+            <p>
+              This destination is still available through Strive. Talk to the
+              team and they will investigate suitable universities, programmes
+              and current fees for you.
+            </p>
+            <a href="https://wa.me/263716730064" target="_blank">
+              Ask about {country || "my options"} ↗
+            </a>
+          </div>
+        )}
+      </section>
+      <section className="process" id="process">
+        <div className="processHead" data-reveal>
+          <span>HOW IT WORKS</span>
+          <h2>
+            From a search to
+            <br />
+            <em>a boarding pass.</em>
+          </h2>
+          <p>
+            Strive turns the study-abroad process into steps you can understand
+            and act on.
+          </p>
+        </div>
+        <div className="consultationStory" data-reveal>
+          <div className="storyImage">
+            <Image
+              src="/strive/student-consultation.webp"
+              alt="Student reviewing an application with a consultant"
+              width={1600}
+              height={1024}
+            />
+          </div>
+          <div>
+            <span>REAL GUIDANCE</span>
+            <h3>
+              A catalogue begins the journey. A consultant makes it personal.
+            </h3>
+            <p>
+              Bring your results, budget and ambitions. Strive helps organise
+              the route from course choice through departure.
+            </p>
+            <a href="https://wa.me/263716730064" target="_blank">
+              Book a conversation ↗
+            </a>
+          </div>
+        </div>
+        <div className="steps">
+          {steps.map((s, i) => (
+            <article key={s[1]} data-reveal>
+              <b>{s[0]}</b>
+              <div>
+                <span>
+                  {i === 0
+                    ? "BEGIN HERE"
+                    : i === 4
+                      ? "READY TO GO"
+                      : "KEEP MOVING"}
+                </span>
+                <h3>{s[1]}</h3>
+                <p>{s[2]}</p>
+              </div>
+              <i>↗</i>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="destinations" id="destinations">
+        <div className="destinationIntro" data-reveal>
+          <span>19 STUDY DESTINATIONS</span>
+          <h2>
+            The world,
+            <br />
+            made easier.
+          </h2>
+          <p>
+            Open a country for a quick study overview, its local currency and
+            tuition figures taken directly from Strive’s master catalogue.
+          </p>
+          <div className="destinationKey">
+            <span>
+              <i /> Programmes listed
+            </span>
+            <span>
+              <i /> Ask Strive
+            </span>
+          </div>
+          <a href="#matcher">Use all filters ↗</a>
+        </div>
+        <div className="destinationList">
+          {countries.map((c, i) => (
+            <a
+              href={`/study-in/${countrySlug(c)}`}
+              className={counts[c] ? "hasPrograms" : "consultOnly"}
+              key={c}
+              onClick={(e) => {
+                e.preventDefault();
+                setDestinationOpen(c);
+              }}
+              data-reveal
+              aria-label={`View study information for ${c}`}
+            >
+              <span>{String(i + 1).padStart(2, "0")}</span>
+              <h3>{c}</h3>
+              <p>{counts[c] ? `${counts[c]} programmes` : "Consultation"}</p>
+              <i>↗</i>
+            </a>
+          ))}
+        </div>
+      </section>
+      <section className="services" id="services">
+        <div className="sectionLabel light">
+          <span>STRIVE SUPPORT</span>
+          <b>Before, during and after application</b>
+        </div>
+        <div className="serviceHeadline">
+          <h2>
+            Five services.
+            <br />
+            <em>One connected journey.</em>
+          </h2>
+          <p>
+            Strive brings your university search, paperwork, preparation and
+            travel into one guided route. Open any service to see exactly how we
+            help.
+          </p>
+        </div>
+        <div className="serviceGrid">
+          {services.map((s, i) => (
+            <button key={s.title} data-reveal onClick={() => setServiceOpen(i)}>
+              <span>0{i + 1}</span>
+              <small>BEYOND BORDERS</small>
+              <h3>{s.title}</h3>
+              <p>{s.strap}</p>
+              <b>More info ↗</b>
+            </button>
+          ))}
+        </div>
+      </section>
+      <section className="journeyGallery" id="gallery">
+        <div className="galleryHead" data-reveal>
+          <span>REAL STRIVE JOURNEYS</span>
+          <h2>
+            From saying goodbye
+            <br />
+            to settling in.
+          </h2>
+          <p>
+            A documented record of real departures, campus visits, student life
+            and academic milestones—not stock photography.
+          </p>
+        </div>
+        <div className="galleryShowcase">
+          <button
+            className="galleryFeature"
+            onClick={() => {
+              setGalleryIndex(0);
+              setGalleryOpen(true);
+            }}
+            data-reveal
+          >
+            <Image
+              src={galleryImages[0]}
+              alt="A real Strive student journey"
+              fill
+              sizes="(max-width: 720px) 100vw, 58vw"
+            />
+            <span>
+              <b>01</b> A journey begins <i>View photograph ↗</i>
+            </span>
+          </button>
+          <div className="galleryMosaic">
+            {galleryImages.slice(1, 5).map((src, i) => (
+              <button
+                key={src}
+                onClick={() => {
+                  setGalleryIndex(i + 1);
+                  setGalleryOpen(true);
+                }}
+                data-reveal
+              >
+                <Image
+                  src={src}
+                  alt={`A real Strive student journey — photograph ${i + 2}`}
+                  fill
+                  sizes="(max-width: 720px) 50vw, 20vw"
+                />
+                <span>{String(i + 2).padStart(2, "0")}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="galleryFooter">
+          <div>
+            <b>21</b>
+            <span>
+              real journey
+              <br />
+              photographs
+            </span>
+          </div>
+          <p>
+            Every image in this collection was supplied by Strive Africa as part
+            of its student journey record.
+          </p>
+          <button
+            onClick={() => {
+              setGalleryIndex(0);
+              setGalleryOpen(true);
+            }}
+          >
+            Open the full gallery ↗
+          </button>
+        </div>
+      </section>
+      <section className="journal" id="journal">
+        <div className="journalTitle" data-reveal>
+          <span>THE BEYOND BORDERS JOURNAL</span>
+          <h2>
+            Useful before
+            <br />
+            you even apply.
+          </h2>
+          <p>
+            Short, practical guidance for students and families planning an
+            international education.
+          </p>
+        </div>
+        <div className="journalStories">
+          <article data-reveal>
+            <small>CHOOSING WELL · 5 MIN</small>
+            <h3>Choose a university by fit—not only by country.</h3>
+            <p>
+              A clear way to compare programme relevance, entry requirements,
+              tuition, location and long-term opportunity.
+            </p>
+            <a href="#matcher">Explore your options ↗</a>
+          </article>
+          <article data-reveal>
+            <small>APPLICATIONS · 4 MIN</small>
+            <h3>The documents worth preparing early.</h3>
+            <p>
+              Start organising results, identification, financial information
+              and supporting documents before deadlines arrive.
+            </p>
+            <a href="#process">See the journey ↗</a>
+          </article>
+          <article data-reveal>
+            <small>PRE-DEPARTURE · 6 MIN</small>
+            <h3>From offer letter to boarding gate.</h3>
+            <p>
+              What happens after admission: acceptance, visa preparation, travel
+              planning and arriving ready.
+            </p>
+            <a href="#services">See Strive support ↗</a>
+          </article>
+        </div>
+        <form className="leadCapture" onSubmit={sendLead} data-reveal>
+          <div>
+            <span>FREE STUDY GUIDE + USEFUL UPDATES</span>
+            <h3>Stay one step ahead.</h3>
+            <p>
+              Leave your details and continue on WhatsApp to request the guide.
+              Your information is sent to Strive only when you choose to send
+              the message.
+            </p>
+          </div>
+          <label>
+            <span>Your name</span>
+            <input
+              required
+              value={leadName}
+              onChange={(e) => setLeadName(e.target.value)}
+              placeholder="First and last name"
+            />
+          </label>
+          <label>
+            <span>Email or phone</span>
+            <input
+              required
+              value={leadContact}
+              onChange={(e) => setLeadContact(e.target.value)}
+              placeholder="How should we reach you?"
+            />
+          </label>
+          <button>Request the guide ↗</button>
+        </form>
+      </section>
+      <section className="studentVoices">
+        <div className="voicesImage" data-reveal>
+          <Image
+            src="/strive/journeys/journey-03.jpeg"
+            alt="Students marking an academic milestone"
+            fill
+            sizes="(max-width: 720px) 100vw, 50vw"
+          />
+          <div className="voicesSeal">
+            <b>REAL</b>
+            <span>
+              student
+              <br />
+              journeys
+            </span>
+          </div>
+        </div>
+        <div className="voicesCopy" data-reveal>
+          <span>STUDENT EXPERIENCES</span>
+          <h2>
+            Trust is built
+            <br />
+            on real journeys.
+          </h2>
+          <p>
+            Families deserve more than promises. Strive documents student
+            departures, arrivals, campuses and milestones, and only publishes
+            feedback after the student’s identity and wording are confirmed.
+          </p>
+          <div className="voicePrinciples">
+            <div>
+              <b>01</b>
+              <span>Real student</span>
+            </div>
+            <div>
+              <b>02</b>
+              <span>Confirmed wording</span>
+            </div>
+            <div>
+              <b>03</b>
+              <span>Published with permission</span>
+            </div>
+          </div>
+          <a
+            href={`https://wa.me/263716730064?text=${encodeURIComponent("Hello Strive, I would like to share a review of my student journey with you.")}`}
+            target="_blank"
+          >
+            Share a verified experience ↗
+          </a>
+          <small>
+            Have you travelled with Strive? Your honest feedback can help
+            another family decide with confidence.
+          </small>
+        </div>
+      </section>
+      <section className="faq" id="faq">
+        <div>
+          <span>QUESTIONS, ANSWERED</span>
+          <h2>
+            Before you
+            <br />
+            get started.
+          </h2>
+        </div>
+        <div className="faqList">
+          {faqs.map((f, i) => (
+            <article key={f[0]}>
+              <button onClick={() => setFaq(faq === i ? -1 : i)}>
+                <span>0{i + 1}</span>
+                <b>{f[0]}</b>
+                <i>{faq === i ? "−" : "+"}</i>
+              </button>
+              {faq === i && <p>{f[1]}</p>}
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="aboutSection" id="about">
+        <div className="aboutMarker" data-reveal>
+          <span>WHO WE ARE</span>
+          <b>
+            Zimbabwe
+            <br />→ the world
+          </b>
+          <small>Education guidance with international reach.</small>
+        </div>
+        <div className="aboutStory" data-reveal>
+          <h2>
+            Ambition should
+            <br />
+            travel <em>further.</em>
+          </h2>
+          <div className="aboutCopy">
+            <p>
+              Strivio Education Solutions is a Zimbabwe-based education
+              consultancy dedicated to connecting students with quality
+              international study opportunities. Through strategic partnerships
+              with universities and education providers across Europe, Asia,
+              Africa, the Americas, and beyond, we have successfully assisted
+              students in pursuing their academic ambitions abroad.
+            </p>
+            <p>
+              Our directors bring extensive industry experience and
+              international exposure, enabling us to provide informed,
+              professional guidance throughout the study-abroad journey, from
+              selecting suitable institutions and programmes to managing
+              applications and enrolment.
+            </p>
+            <p>
+              Strivio Education Solutions also serves as a student recruitment
+              supplier to Nexafriqa (Pty) Ltd, a South Africa-based consultancy.
+              Through this relationship, Strivio supports Nexafriqa’s
+              recruitment activities across Southern Africa, helping students
+              access a wider network of international education opportunities.
+            </p>
+          </div>
+          <div className="aboutSocials">
+            <span>FOLLOW THE JOURNEY</span>
+            <a
+              href="https://www.facebook.com/afriqastrive"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <b>Facebook</b>
+              <i>↗</i>
+            </a>
+            <a
+              href="https://www.tiktok.com/@striveafrica.edu"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <b>TikTok</b>
+              <i>↗</i>
+            </a>
+            <a
+              href="https://www.instagram.com/strive_africa?igsi=OTFqeTc0dm53NzRo"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <b>Instagram</b>
+              <i>↗</i>
+            </a>
+          </div>
+        </div>
+      </section>
+      <section className="contact" id="contact">
+        <span>READY WHEN YOU ARE</span>
+        <h2>
+          Let’s make your next
+          <br />
+          step <em>clear.</em>
+        </h2>
+        <p>
+          Meet the Strive team in Zimbabwe or South Africa, or start the
+          conversation online.
+        </p>
+        <div className="contactOffices">
+          <article>
+            <small>HARARE · ZIMBABWE</small>
+            <b>6 Chelmsford Road</b>
+            <p>
+              Office 35, Belgravia
+              <br />
+              Harare, Zimbabwe
+            </p>
+          </article>
+          <article>
+            <small>GAUTENG · SOUTH AFRICA</small>
+            <b>Number 5 Benmore Gardens</b>
+            <p>
+              Corworx, Gauteng
+              <br />
+              South Africa
+            </p>
+          </article>
+        </div>
+        <div className="contactActions">
+          <a href="https://wa.me/263716730064" target="_blank">
+            WhatsApp Strive ↗
+          </a>
+          <a href="tel:+263716730064">Call +263 71 673 0064</a>
+          <a href="mailto:batsirai@striveafriqa.com">
+            batsirai@striveafriqa.com ↗
+          </a>
+        </div>
+      </section>
+      <footer>
+        <div className="footerAbout">
+          <a href="#top">
+            <Image
+              src="/strive-logo.jpeg"
+              width={170}
+              height={92}
+              alt="Strive Africa"
+            />
+          </a>
+          <p>Study abroad guidance from first search to final departure.</p>
+        </div>
+        <div>
+          <small>EXPLORE</small>
+          <a href="#courses">Programmes & fees</a>
+          <a href="#destinations">Countries</a>
+          <a href="#gallery">Student journeys</a>
+          <a href="#about">Who we are</a>
+        </div>
+        <div>
+          <small>SERVICES</small>
+          <a href="#services">University placement</a>
+          <a href="#services">Applications</a>
+          <a href="#services">Visa & flights</a>
+        </div>
+        <div>
+          <small>VISIT US</small>
+          <p>
+            <b>Zimbabwe</b>
+            <br />6 Chelmsford Road, Office 35
+            <br />
+            Belgravia, Harare
+          </p>
+          <p>
+            <b>South Africa</b>
+            <br />
+            Number 5 Benmore Gardens
+            <br />
+            Corworx, Gauteng
+          </p>
+          <a href="tel:+263716730064">+263 71 673 0064</a>
+          <a href="mailto:batsirai@striveafriqa.com">
+            batsirai@striveafriqa.com
+          </a>
+        </div>
+        <div className="footerSocials">
+          <small>FOLLOW STRIVE</small>
+          <a
+            href="https://www.facebook.com/afriqastrive"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Facebook ↗
+          </a>
+          <a
+            href="https://www.tiktok.com/@striveafrica.edu"
+            target="_blank"
+            rel="noreferrer"
+          >
+            TikTok ↗
+          </a>
+          <a
+            href="https://www.instagram.com/strive_africa?igsi=OTFqeTc0dm53NzRo"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Instagram ↗
+          </a>
+        </div>
+        <div className="footerBottom">
+          <span>© 2026 Strive Africa</span>
+          <a href="#top">Back to top ↑</a>
+        </div>
+      </footer>
+      {serviceOpen !== null && (
+        <div
+          className="serviceModalWrap"
+          onMouseDown={(e) =>
+            e.target === e.currentTarget && setServiceOpen(null)
+          }
+        >
+          <article
+            className="serviceModal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="service-title"
+          >
+            <button
+              className="close"
+              onClick={() => setServiceOpen(null)}
+              aria-label="Close service details"
+            >
+              ×
+            </button>
+            <span>0{serviceOpen + 1} / STRIVE SUPPORT</span>
+            <h2 id="service-title">{services[serviceOpen].title}</h2>
+            <h3>{services[serviceOpen].strap}</h3>
+            <p>{services[serviceOpen].intro}</p>
+            <small>OUR SUPPORT INCLUDES</small>
+            <ul>
+              {services[serviceOpen].items.map((item) => (
+                <li key={item}>
+                  <i>✓</i>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <b>{services[serviceOpen].close}</b>
+            <a href="https://wa.me/263716730064" target="_blank">
+              Talk to us about this service ↗
+            </a>
+          </article>
+        </div>
+      )}
+      {destinationOpen && (
+        <div
+          className="destinationModalWrap"
+          onMouseDown={(e) =>
+            e.target === e.currentTarget && setDestinationOpen(null)
+          }
+        >
+          <article
+            className="destinationModal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="destination-title"
+          >
+            <button
+              className="close"
+              onClick={() => setDestinationOpen(null)}
+              aria-label="Close destination information"
+            >
+              ×
+            </button>
+            <span>STUDY DESTINATION · STRIVE AFRICA</span>
+            <h2 id="destination-title">{destinationOpen}</h2>
+            <p className="destinationSummary">
+              {countryNotes[destinationOpen].summary}
+            </p>
+            <div className="destinationFacts">
+              <div>
+                <small>LOCAL CURRENCY</small>
+                <b>{countryNotes[destinationOpen].currency}</b>
+              </div>
+              <div>
+                <small>PROGRAMMES LISTED</small>
+                <b>
+                  {destinationStats[destinationOpen].programmes ||
+                    "Available by consultation"}
+                </b>
+              </div>
+              <div>
+                <small>UNIVERSITIES LISTED</small>
+                <b>
+                  {destinationStats[destinationOpen].universities ||
+                    "Being confirmed"}
+                </b>
+              </div>
+            </div>
+            <div className="destinationFees">
+              <small>CATALOGUE TUITION RANGE</small>
+              {destinationStats[destinationOpen].ranges.length ? (
+                destinationStats[destinationOpen].ranges.map(
+                  (range: string) => <b key={range}>{range}</b>,
+                )
+              ) : (
+                <>
+                  <b>Ask Strive for current fees</b>
+                  <p>
+                    No verified fee rows for this country are in the supplied
+                    master file yet.
+                  </p>
+                </>
+              )}
+            </div>
+            <p className="feeNotice">
+              Tuition only. Figures come from Strive’s supplied catalogue and
+              may vary by programme, intake and institution. Living costs, visa,
+              insurance, flights and other charges are separate.
+            </p>
+            <div className="destinationActions">
+              {counts[destinationOpen] ? (
+                <button onClick={() => pick(destinationOpen)}>
+                  View {counts[destinationOpen]} programmes ↗
+                </button>
+              ) : (
+                <a
+                  href={`https://wa.me/263716730064?text=${encodeURIComponent(`Hello Strive, I would like current study and fee information for ${destinationOpen}.`)}`}
+                  target="_blank"
+                >
+                  Ask Strive about {destinationOpen} ↗
+                </a>
+              )}
+              <button
+                className="secondary"
+                onClick={() => setDestinationOpen(null)}
+              >
+                Close
+              </button>
+            </div>
+          </article>
+        </div>
+      )}
+      {galleryOpen && (
+        <div
+          className="galleryModal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Strive student journey gallery"
+        >
+          <button
+            className="galleryClose"
+            onClick={() => setGalleryOpen(false)}
+            aria-label="Close gallery"
+          >
+            ×
+          </button>
+          <div className="galleryCanvas">
+            <Image
+              key={galleryImages[galleryIndex]}
+              src={galleryImages[galleryIndex]}
+              alt={`A real Strive student journey — photograph ${galleryIndex + 1}`}
+              fill
+              sizes="100vw"
+            />
+          </div>
+          <div className="galleryNav">
+            <button
+              onClick={() =>
+                setGalleryIndex(
+                  (i) => (i - 1 + galleryImages.length) % galleryImages.length,
+                )
+              }
+              aria-label="Previous photograph"
+            >
+              ←
+            </button>
+            <span>
+              <b>{String(galleryIndex + 1).padStart(2, "0")}</b> /{" "}
+              {galleryImages.length} · REAL STRIVE JOURNEYS
+            </span>
+            <button
+              onClick={() =>
+                setGalleryIndex((i) => (i + 1) % galleryImages.length)
+              }
+              aria-label="Next photograph"
+            >
+              →
+            </button>
+          </div>
+          <div className="galleryThumbs">
+            {galleryImages.map((src, i) => (
+              <button
+                className={i === galleryIndex ? "active" : ""}
+                key={src}
+                onClick={() => setGalleryIndex(i)}
+                aria-label={`Show photograph ${i + 1}`}
+              >
+                <Image src={src} alt="" fill sizes="70px" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {newsletterOpen &&
+        !eligibilityOpen &&
+        !destinationOpen &&
+        serviceOpen === null &&
+        !galleryOpen && (
+          <div
+            className="newsletterWrap"
+            onMouseDown={(e) =>
+              e.target === e.currentTarget && closeNewsletter()
+            }
+          >
+            <form
+              className="newsletterPopup"
+              onSubmit={sendNewsletter}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="newsletter-title"
+            >
+              <button
+                type="button"
+                className="close"
+                onClick={closeNewsletter}
+                aria-label="Close email signup"
+              >
+                ×
+              </button>
+              <span>STUDENT OPPORTUNITIES · STRIVE AFRICA</span>
+              <h2 id="newsletter-title">
+                Study options,
+                <br />
+                <em>sent your way.</em>
+              </h2>
+              <p>
+                Get programme updates, application reminders and practical
+                study-abroad guidance from the Strive team.
+              </p>
+              <label>
+                <span>Your email address</span>
+                <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  placeholder="student@example.com"
+                />
+              </label>
+              <button className="newsletterSubmit">Join via WhatsApp ↗</button>
+              <small>
+                WhatsApp will open with your email ready to send to +263 71 673
+                0064. Nothing is sent until you press Send.
+              </small>
+            </form>
+          </div>
+        )}
+      {eligibilityOpen && (
+        <div
+          className="eligibilityWrap"
+          onMouseDown={(e) =>
+            e.target === e.currentTarget && setEligibilityOpen(false)
+          }
+        >
+          <form
+            className="eligibilityForm"
+            onSubmit={sendAssessment}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="eligibility-title"
+          >
+            <button
+              type="button"
+              className="close"
+              onClick={() => setEligibilityOpen(false)}
+              aria-label="Close eligibility checker"
+            >
+              ×
+            </button>
+            <div className="eligibilityIntro">
+              <span>FREE · ANSWERED WITHIN 24 HOURS</span>
+              <h2 id="eligibility-title">
+                Are you eligible
+                <br />
+                to study abroad?
+              </h2>
+              <p>
+                Send your academic information to Strive for a human assessment
+                of suitable countries, programmes and entry pathways.
+              </p>
+              <div>
+                <b>01</b> Complete your profile
+              </div>
+              <div>
+                <b>02</b> Select your documents
+              </div>
+              <div>
+                <b>03</b> Email Strive securely
+              </div>
+            </div>
+            <div className="eligibilityFields">
+              <div className="assessmentRecipient">
+                <small>YOUR ASSESSMENT WILL BE EMAILED TO</small>
+                <a href={`mailto:${assessmentEmail}`}>{assessmentEmail}</a>
+                <span>The recipient is filled in automatically.</span>
+              </div>
+              <div className="fieldPair">
+                <label>
+                  <span>Full name</span>
+                  <input
+                    required
+                    value={assessmentName}
+                    onChange={(e) => setAssessmentName(e.target.value)}
+                    placeholder="Your full name"
+                  />
+                </label>
+                <label>
+                  <span>WhatsApp or email</span>
+                  <input
+                    required
+                    value={assessmentContact}
+                    onChange={(e) => setAssessmentContact(e.target.value)}
+                    placeholder="How Strive should reply"
+                  />
+                </label>
+              </div>
+              <div className="fieldPair">
+                <label>
+                  <span>Applying for</span>
+                  <select
+                    value={assessmentLevel}
+                    onChange={(e) => setAssessmentLevel(e.target.value)}
+                  >
+                    <option>Undergraduate</option>
+                    <option>Postgraduate</option>
+                    <option>Foundation / Diploma</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Preferred country</span>
+                  <select
+                    value={assessmentCountry}
+                    onChange={(e) => setAssessmentCountry(e.target.value)}
+                  >
+                    <option value="">Open to recommendations</option>
+                    {countries.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label>
+                <span>
+                  {assessmentLevel === "Postgraduate"
+                    ? "Degree and transcript summary"
+                    : "O Level and A Level results summary"}
+                </span>
+                <textarea
+                  required
+                  rows={4}
+                  value={assessmentResults}
+                  onChange={(e) => setAssessmentResults(e.target.value)}
+                  placeholder={
+                    assessmentLevel === "Postgraduate"
+                      ? "Degree, institution, classification and key subjects"
+                      : "Subjects and grades, plus any certificates or diplomas"
+                  }
+                />
+              </label>
+              <label className="fileDrop">
+                <span>Passport, results and transcripts</span>
+                <input
+                  type="file"
+                  multiple
+                  required
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => {
+                    const chosen = Array.from(e.target.files || []);
+                    const accepted = chosen.filter(
+                      (f) => f.size <= 10 * 1024 * 1024,
+                    );
+                    setAssessmentFiles(accepted);
+                    setAssessmentNote(
+                      accepted.length < chosen.length
+                        ? "Some files were larger than 10 MB and were not selected."
+                        : "",
+                    );
+                  }}
+                />
+                <b>
+                  {assessmentFiles.length
+                    ? `${assessmentFiles.length} document${assessmentFiles.length === 1 ? "" : "s"} selected`
+                    : "Choose PDF, JPG or PNG files"}
+                </b>
+                <small>
+                  Maximum 10 MB per file. Your email app will open addressed to
+                  Strive; attach these selected documents there before pressing
+                  Send.
+                </small>
+              </label>
+              <label className="consent">
+                <input type="checkbox" required />
+                <span>
+                  I consent to sharing these details and documents with Strive
+                  Africa for an eligibility assessment.
+                </span>
+              </label>
+              {assessmentNote && (
+                <p className="assessmentNote">{assessmentNote}</p>
+              )}
+              <button className="assessmentSubmit">
+                Email assessment to Strive ↗
+              </button>
+              <small className="assessmentLegal">
+                The email opens addressed to {assessmentEmail}. Please attach
+                your documents before sending. This is a preliminary assessment,
+                not a university admission or visa decision.
+              </small>
+            </div>
+          </form>
+        </div>
+      )}
+      <button
+        id="eligibility-checker"
+        className="eligibilityFloat"
+        onClick={() => {
+          setEligibilityOpen(true);
+          setAssessmentNote("");
+        }}
+      >
+        <i>✓</i>
+        <span>
+          <b>Are you eligible?</b>
+          <small>Check now · 24hr answer</small>
+        </span>
+      </button>
+      <StriveFloatingChat />
+    </main>
+  );
+}
